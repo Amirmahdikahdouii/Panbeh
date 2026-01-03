@@ -51,3 +51,7 @@ func GetLogLevel() LogLevel {
 func GetPostgres() *Postgres {
 	return &cfg.Postgres
 }
+
+func GetRedis() *Redis {
+	return &cfg.Redis
+}
