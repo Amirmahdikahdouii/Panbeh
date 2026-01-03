@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -121,6 +122,96 @@ func NewPostgresConfig(postgresDSN string, maxOpenConns int, maxIdleConns int, c
 	}
 }
 
+type RedisAddr string
+
+func NewRedisAddr(addr string) (RedisAddr, error) {
+	validateRedisURL := func(addr string) (RedisAddr, error) {
+		u, err := url.Parse(addr)
+		if err != nil {
+			return "", err
+		}
+
+		if u.Scheme != "redis" && u.Scheme != "rediss" {
+			return "", errors.New("invalid scheme, expected redis or rediss")
+		}
+
+		if u.Host == "" {
+			return "", errors.New("host is missing")
+		}
+
+		host, port, err := net.SplitHostPort(u.Host)
+		if err != nil {
+			return "", errors.New("invalid host:port")
+		}
+
+		if host == "" {
+			return "", errors.New("host is empty")
+		}
+
+		if port == "" {
+			return "", errors.New("port is empty")
+		}
+
+		if _, err := strconv.Atoi(port); err != nil {
+			return "", errors.New("port must be a number")
+		}
+
+		// Optional DB index validation (/0, /1, ...)
+		if u.Path != "" && u.Path != "/" {
+			db := strings.TrimPrefix(u.Path, "/")
+			if _, err := strconv.Atoi(db); err != nil {
+				return "", errors.New("invalid redis db index")
+			}
+		}
+
+		return RedisAddr(addr), nil
+	}
+
+	validateRedisHostPort := func(addr string) (RedisAddr, error) {
+		host, port, err := net.SplitHostPort(addr)
+		if err != nil {
+			return "", errors.New("invalid redis address, expected host:port")
+		}
+
+		if host == "" {
+			return "", errors.New("host is empty")
+		}
+
+		if port == "" {
+			return "", errors.New("port is empty")
+		}
+
+		if _, err := strconv.Atoi(port); err != nil {
+			return "", errors.New("port must be a number")
+		}
+
+		return RedisAddr(addr), nil
+	}
+	addr = strings.TrimSpace(addr)
+	if addr == "" {
+		return "", errors.New("redis address is empty")
+	}
+
+	// URL-style DSN
+	if strings.HasPrefix(addr, "redis://") || strings.HasPrefix(addr, "rediss://") {
+		return validateRedisURL(addr)
+	}
+
+	// host:port style
+	return validateRedisHostPort(addr)
+}
+
+func NewRedisConfig(addr string) Redis {
+	redisAddr, err := NewRedisAddr(addr)
+	if err != nil {
+		panic(err)
+	}
+
+	return Redis{
+		RedisAddr: redisAddr,
+	}
+}
+
 type Config struct {
 	Env      string
 	LogLevel LogLevel
@@ -139,7 +230,5 @@ type Postgres struct {
 }
 
 type Redis struct {
-	RedisAddr     string
-	RedisPassword string
-	RedisDB       int
+	RedisAddr     RedisAddr
 }

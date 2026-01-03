@@ -16,10 +16,8 @@ func Load() error {
 	}
 
 	cfg.Postgres = NewPostgresConfig(getenv("POSTGRES_DSN", "postgres://admin:123456@localhost:5432/panbeh"), parseInt(getenv("POSTGRES_MAX_OPEN_CONNS", "10")), parseInt(getenv("POSTGRES_MAX_IDLE_CONNS", "5")), parseIntDuration(getenv("POSTGRES_CONN_MAX_LIFETIME_SECONDS", "300")))
+	cfg.Redis = NewRedisConfig(getenv("REDIS_ADDR", "127.0.0.1:6379"))
 	cfg.OTPTTL = parseIntDuration(getenv("OTP_TTL_SECONDS", "300"))
-	cfg.RedisAddr = getenv("REDIS_ADDR", "127.0.0.1:6379")
-	cfg.RedisPassword = os.Getenv("REDIS_PASSWORD")
-	cfg.RedisDB = parseInt(getenv("REDIS_DB", "0"))
 	return nil
 }
 
