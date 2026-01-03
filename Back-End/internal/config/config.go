@@ -55,3 +55,7 @@ func GetPostgres() *Postgres {
 func GetRedis() *Redis {
 	return &cfg.Redis
 }
+
+func GetOTPTTL() time.Duration {
+	return cfg.OTPTTL
+}
