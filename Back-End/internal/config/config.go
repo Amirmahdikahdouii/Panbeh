@@ -12,7 +12,7 @@ func Load() error {
 	cfg = &Config{
 		Env:      getenv("APP_ENV", "local"),
 		LogLevel: NewLogLevel(getenv("LOG_LEVEL", "info")),
-		HTTPPort: getenv("HTTP_PORT", "8080"),
+		RestAddr: getenv("REST_ADDR", ":8080"),
 	}
 
 	cfg.Postgres = NewPostgresConfig(getenv("POSTGRES_DSN", "postgres://admin:123456@localhost:5432/panbeh"), parseInt(getenv("POSTGRES_MAX_OPEN_CONNS", "10")), parseInt(getenv("POSTGRES_MAX_IDLE_CONNS", "5")), parseIntDuration(getenv("POSTGRES_CONN_MAX_LIFETIME_SECONDS", "300")))
@@ -58,4 +58,8 @@ func GetRedis() *Redis {
 
 func GetOTPTTL() time.Duration {
 	return cfg.OTPTTL
+}
+
+func GetRestServerAddr() string {
+	return cfg.RestAddr
 }

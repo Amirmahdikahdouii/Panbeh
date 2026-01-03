@@ -216,7 +216,8 @@ type Config struct {
 	Env      string
 	LogLevel LogLevel
 
-	HTTPPort string
+	// TODO: add a type for valid rest addr
+	RestAddr string
 	Postgres
 	Redis
 	OTPTTL time.Duration
@@ -230,5 +231,5 @@ type Postgres struct {
 }
 
 type Redis struct {
-	RedisAddr     RedisAddr
+	RedisAddr RedisAddr
 }
